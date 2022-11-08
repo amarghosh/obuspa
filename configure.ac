@@ -19,6 +19,7 @@ AC_ARG_ENABLE(stomp, [AS_HELP_STRING([--enable-stomp], [enable STOMP Message sup
 AC_ARG_ENABLE(mqtt, [AS_HELP_STRING([--enable-mqtt], [enable MQTT Message support])],,enable_mqtt=yes)
 AC_ARG_ENABLE(coap, [AS_HELP_STRING([--enable-coap], [enable COAP Message support])],,enable_coap=yes)
 AC_ARG_ENABLE(websockets, [AS_HELP_STRING([--enable-websockets], [enable WebSockets Message support])],,enable_websockets=yes)
+AC_ARG_ENABLE(mdns, [AS_HELP_STRING([--enable-mdns], [enable MDNS support])],,enable_mdns=no)
 
 # Checks for libraries.
 # This also defines autotools magic variables for use in the .am files
@@ -43,6 +44,11 @@ AS_IF([test "x$enable_mqtt" = xyes], [
 AS_IF([test "x$enable_websockets" = xyes], [
     PKG_CHECK_MODULES([libwebsockets], [libwebsockets >= 4.1.0])
 	AC_DEFINE(ENABLE_WEBSOCKETS)
+])
+
+AS_IF([test "x$enable_mdns" = xyes], [
+	PKG_CHECK_MODULES(avahi, avahi-core)
+	AC_DEFINE(ENABLE_MDNS)
 ])
 
 # Check which flavour of strerror_r is available on the target

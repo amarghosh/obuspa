@@ -90,10 +90,11 @@ SOURCES = src/core/main.c \
                     src/core/wsserver.c \
                     src/core/usp_record.c \
                     src/core/sar_vector.c \
+                    src/core/mdns.c \
                     src/core/e2e_context.c
 
 obuspa_SOURCES = $(SOURCES)
-obuspa_CPPFLAGS = $(openssl_CFLAGS) $(sqlite3_CFLAGS) $(libcurl_CFLAGS) $(zlib_CFLAGS) $(libmosquitto_CFLAGS) $(libwebsockets_CFLAGS)
+obuspa_CPPFLAGS = $(openssl_CFLAGS) $(sqlite3_CFLAGS) $(libcurl_CFLAGS) $(zlib_CFLAGS) $(libmosquitto_CFLAGS) $(libwebsockets_CFLAGS) $(avahi_CFLAGS)
 obuspa_CPPFLAGS += -DOBUSPA_LOCAL_STATE_DIR=\"$(OBUSPA_LOCAL_STATE_DIR)\"
 obuspa_CPPFLAGS +=  $(AM_CPPFLAGS) \
                       -Werror \
@@ -108,7 +109,7 @@ obuspa_CPPFLAGS +=  $(AM_CPPFLAGS) \
 obuspa_LDFLAGS = -rdynamic
 
 obuspa_LDADD = -lm -ldl -lpthread -lrt
-obuspa_LDADD += $(openssl_LIBS) $(sqlite3_LIBS) $(libcurl_LIBS) $(zlib_LIBS) $(libmosquitto_LIBS) $(libwebsockets_LIBS)
+obuspa_LDADD += $(openssl_LIBS) $(sqlite3_LIBS) $(libcurl_LIBS) $(zlib_LIBS) $(libmosquitto_LIBS) $(libwebsockets_LIBS) $(avahi_LIBS)
 
 obuspa_LDFLAGS += -Wl,-rpath=/usr/local/lib
 

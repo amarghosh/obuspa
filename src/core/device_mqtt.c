@@ -55,6 +55,11 @@
 #include "mqtt.h"
 #include "iso8601.h"
 
+#ifdef ENABLE_MDNS
+#include "mdns.h"
+static void mdns_callback(const char *host, const char *ip, uint16_t port, void *userdata);
+#endif
+
 typedef struct
 {
     mqtt_conn_params_t conn_params;
@@ -322,6 +327,10 @@ void DEVICE_MQTT_Stop(void)
     }
 
     // NOTE: No need to call MQTT_Destroy() from here, as the MQTT MTP thread will already have been destroyed before this function is called
+#ifdef ENABLE_MDNS
+    MDNS_stop();
+#endif
+
 }
 
 /*********************************************************************//**
@@ -355,6 +364,24 @@ int DEVICE_MQTT_StartAllClients(void)
             }
         }
     }
+
+#ifdef ENABLE_MDNS
+    err = MDNS_init();
+    if (err == 0) {
+        mdns_start_params_t params = {
+            .mtp_type = kUspMdnsMtp_Mqtt,
+            .end_point_type = kUspMdnsEndPoint_Agent,
+            .listener = mdns_callback,
+            .userdata = NULL
+        };
+        err = MDNS_start_listening(&params);
+    }
+
+    if (err != 0) {
+        return err;
+    }
+#endif
+
     return USP_ERR_OK;
 }
 
@@ -2430,5 +2457,43 @@ int Validate_MQTTSubscriptionTopic(dm_req_t *req, char *value)
     // If the code gets here, then the new topic ID value is unique for this MQTT client
     return USP_ERR_OK;
 }
+
+#ifdef ENABLE_MDNS
+void mdns_callback(const char *host, const char *ip, uint16_t port, void *userdata)
+{
+    int clientCount = ClientNumberOfEntries();
+    bool schedule_reconnect = false;
+    USP_ASSERT(ip != NULL);
+
+    for (int i = 0; i < clientCount; i++) {
+        client_t * mqttclient = &mqtt_client_params[i];
+        if (mqttclient->conn_params.instance == INVALID || !mqttclient->conn_params.enable) {
+            continue;
+        }
+
+        mqtt_conn_params_t *mp = &mqttclient->conn_params;
+        // check whether the address is different
+        if (strcmp(mp->host, ip) == 0 && mp->port == port) {
+            continue;
+        }
+
+        fprintf(stdout, "MP instance %d old_address=%s:%u new=%s:%u(%s)\n",
+                mp->instance, mp->host, mp->port, ip, port, host);
+
+        USP_SAFE_FREE(mp->host);
+        mp->host = USP_STRDUP((char*)ip);
+        mp->port = port;
+
+        // Schedule a reconnect
+        ScheduleMqttReconnect(mp);
+        schedule_reconnect = true;
+    }
+
+    if (schedule_reconnect) {
+        MQTT_ActivateScheduledActions();
+    }
+}
+#endif
+
 
 #endif

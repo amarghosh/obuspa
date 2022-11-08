@@ -25,6 +25,8 @@ $ sudo apt-get install libssl-dev libcurl4-openssl-dev libsqlite3-dev libz-dev a
 $ sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
 $ sudo apt-get update
 $ sudo apt-get install libmosquitto-dev libwebsockets-dev
+# For MDNS support
+$ sudo apt-get libavahi-core-dev
 ```
 > **_NOTE:_**   libwebsockets must be compiled without support for event loop libraries (e.g. LWS_WITH_LIBUV=false) and without websocket extensions (LWS_WITHOUT_EXTENSIONS=true). These are the defaults but many distros choose to override them.
 
@@ -46,6 +48,7 @@ $ sudo make install
 * _--disable-mqtt_ - Removes MQTT MTP
 * _--disable-websockets_ - Removes WebSockets MTP
 * _--disable-stomp_ - Removes STOMP MTP
+* _--enable-mdns_ - Enable mDNS using avahi (only implemented for MQTT)
 
 ## Running OB-USP-AGENT for the first time
 Before OB-USP-AGENT starts, it needs a database containing the settings of the USP controller to contact.

@@ -21,6 +21,7 @@ RUN apt-get update &&\
         libtool \
         libmosquitto-dev \
         libwebsockets-dev \
+        libavahi-core-dev \
         pkg-config \
         make \
         &&\
@@ -31,7 +32,7 @@ RUN apt-get update &&\
 COPY . /obuspa/
 RUN cd /obuspa/ && \
     autoreconf -fi && \
-    ./configure && \
+    ./configure --enable-mdns && \
     make -j${MAKE_JOBS} && \
     make install
 
